@@ -5,3 +5,4 @@ src/flaskapp/.env
 src/db.py
 src/flaskapp/site.db
 src/db.py
+src/flaskapp/static/profile_pics/59741970eb945ed6.jpg
