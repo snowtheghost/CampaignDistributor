@@ -1,4 +1,4 @@
-<!-- variable form is passed in through flaskapp.py -->
+<!-- variable form is passed in through run.py -->
 {% extends "layout.html" %}
 {% block content %}
     <div class="content-section">
@@ -6,20 +6,6 @@
             {{ form.hidden_tag() }}  <!-- adds CSRF token -->
             <fieldset class="form-group">
                 <legend class="border-bottom mb-4">Register</legend>
-                <!-- username code, with error alerts built in with WTForms -->
-                <div class="form-group">
-                    {{ form.username.label(class="form-control-label") }}
-                    {% if form.username.errors %}
-                        {{ form.username(class="form-control form-control-lg is-invalid") }}
-                        <div class="invalid-feedback">
-                            {% for error in form.username.errors %}
-                                <span>{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        {{ form.username(class="form-control form-control-lg") }}
-                    {% endif %}
-                </div>
                 <!-- email code, with error alerts built in with WTForms -->
                 <div class="form-group">
                     {{ form.email.label(class="form-control-label") }}
@@ -48,30 +34,25 @@
                         {{ form.password(class="form-control form-control-lg") }}
                     {% endif %}
                 </div>
-                <!-- confirm password code, with error alerts built in with WTForms -->
-                <div class="form-group">
-                    {{ form.confirm_password.label(class="form-control-label") }}
-                    {% if form.confirm_password.errors %}
-                        {{ form.confirm_password(class="form-control form-control-lg is-invalid") }}
-                        <div class="invalid-feedback">
-                            {% for error in form.confirm_password.errors %}
-                                <span>{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        {{ form.confirm_password(class="form-control form-control-lg") }}
-                    {% endif %}
+                <!-- checkbox for remember me -->
+                <div class="form-check">
+                    {{ form.remember(class="form-check-input") }}
+                    {{ form.remember.label(class="form-check-label") }}
                 </div>
             </fieldset>
+            <!-- submit button -->
             <div class="form-group">
                 {{ form.submit(class="btn btn-outline-info") }}
             </div>
+            <small class="text-muted ml-2">
+                <a href="#">Forgot Password</a> <!-- TODO -->
+            </small>
         </form>
     </div>
     <!-- Direct to login page if the user already has an account -->
     <div class="border-top pt-3">
         <small class="text-muted">
-            Already registered? <a class="ml-2" href="{{ url_for("login") }}">Login</a> <!-- login tag in flaskapp -->
+            Not registered? <a class="ml-2" href="{{ url_for("register") }}">Register here</a> <!-- login tag in flaskapp -->
         </small>
     </div>
 {% endblock content %}

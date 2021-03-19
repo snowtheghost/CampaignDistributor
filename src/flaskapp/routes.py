@@ -1,19 +1,6 @@
-from flask import Flask, render_template, flash, redirect, url_for
-from flask_sqlalchemy import SQLAlchemy
-
-from forms import RegistrationForm, LoginForm
-
-import os
-from dotenv import load_dotenv
-load_dotenv()
-
-from models import User, Post
-
-# key for cookies
-app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
-db = SQLAlchemy(app)
+from flask import render_template, flash, redirect, url_for, app
+from flaskapp.forms import RegistrationForm, LoginForm
+from flaskapp.models import User, Post
 
 posts = [
     {
@@ -63,7 +50,3 @@ def login():
         # else:
             # flash("Invalid login. Check your username and password.", "danger")
     return render_template('login.html', title="Login Page", form=form)
-
-
-if __name__ == '__main__':
-    app.run(debug=True)  # Debug mode for development
