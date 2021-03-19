@@ -2,3 +2,5 @@
 __pycache__
 /src/resources
 src/flaskapp/.env
+src/db.py
+src/flaskapp/site.db
