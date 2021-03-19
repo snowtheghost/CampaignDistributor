@@ -4,3 +4,4 @@ __pycache__
 src/flaskapp/.env
 src/db.py
 src/flaskapp/site.db
+src/db.py
