@@ -2,7 +2,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from flask_login import current_user
-from wtforms import StringField, PasswordField, SubmitField, BooleanField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 
 from flaskapp.models import User
@@ -44,7 +44,6 @@ class LoginForm(FlaskForm):
 
 
 class UpdateAccountForm(FlaskForm):
-    # Assign each variable to a validated field
     username = StringField('Username',
                            validators=[DataRequired(), Length(min=MIN_USERNAME_LENGTH, max=MAX_USERNAME_LENGTH)])
     email = StringField('Email', validators=[DataRequired(), Email()])
@@ -62,3 +61,10 @@ class UpdateAccountForm(FlaskForm):
             email = User.query.filter_by(email=email.data).first()  # query db for user with same email
             if email:  # if there is a user with the email, raise validation error
                 raise ValidationError('Email already in use.')
+
+
+class PostForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired()])
+    content = TextAreaField('Content', validators=[DataRequired()])
+    submit = SubmitField('Post')
+
