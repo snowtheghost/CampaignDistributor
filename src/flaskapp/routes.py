@@ -1,6 +1,6 @@
-from flask import render_template, flash, redirect, url_for, app
+from flask import render_template, flash, redirect, url_for
+from flaskapp import app
 from flaskapp.forms import RegistrationForm, LoginForm
-from flaskapp.models import User, Post
 
 posts = [
     {
