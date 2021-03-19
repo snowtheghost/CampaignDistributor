@@ -6,3 +6,4 @@ python-dotenv~=0.15.0
 email_validator
 flask-bcrypt
 flask-login
+pillow

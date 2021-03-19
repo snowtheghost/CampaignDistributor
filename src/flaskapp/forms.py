@@ -1,5 +1,7 @@
 # User input forms using flask_wtf
 from flask_wtf import FlaskForm
+from flask_wtf.file import FileField, FileAllowed
+from flask_login import current_user
 from wtforms import StringField, PasswordField, SubmitField, BooleanField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 
@@ -39,3 +41,24 @@ class LoginForm(FlaskForm):
 
     remember = BooleanField('Remember Me')
     submit = SubmitField('Login')
+
+
+class UpdateAccountForm(FlaskForm):
+    # Assign each variable to a validated field
+    username = StringField('Username',
+                           validators=[DataRequired(), Length(min=MIN_USERNAME_LENGTH, max=MAX_USERNAME_LENGTH)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    picture = FileField('Profile Image', validators=[FileAllowed(['jpg', 'png'])])
+    submit = SubmitField('Update')
+
+    def validate_username(self, username):
+        if username.data != current_user.username:
+            user = User.query.filter_by(username=username.data).first()  # query db for user with same username
+            if user:  # if there is a user with the username, raise validation error
+                raise ValidationError('Username taken.')
+
+    def validate_email(self, email):
+        if email.data != current_user.email:
+            email = User.query.filter_by(email=email.data).first()  # query db for user with same email
+            if email:  # if there is a user with the email, raise validation error
+                raise ValidationError('Email already in use.')

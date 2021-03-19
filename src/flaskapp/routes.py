@@ -1,6 +1,9 @@
+import secrets
+import os
+from PIL import Image
 from flask import render_template, flash, redirect, url_for, redirect, request
 from flaskapp import app, db, bcrypt
-from flaskapp.forms import RegistrationForm, LoginForm
+from flaskapp.forms import RegistrationForm, LoginForm, UpdateAccountForm
 from flaskapp.models import User, Post
 from flask_login import login_user, current_user, logout_user, login_required
 
@@ -55,7 +58,7 @@ def register():
     return render_template('register.html', title="Registration Form", form=form)
 
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET', 'POST'])  # allow get and post requests
 def login():
     # Check if user is logged in
     if current_user.is_authenticated:
@@ -82,7 +85,36 @@ def logout():
     return redirect(url_for('home'))
 
 
-@app.route('/account')
+def save_picture(form_picture):  # save a picture using randomized token
+    random_hex = secrets.token_hex(8)
+    _, f_ext = os.path.splitext(form_picture.filename)
+    picture_filename = random_hex + f_ext
+    picture_path = os.path.join(app.root_path, 'static/profile_pics', picture_filename)  # joins paths to desired dir
+
+    output_size = (125, 125)
+    i = Image.open(form_picture)
+    i.thumbnail(output_size)  # resize the image using pillow
+
+    i.save(picture_path)  # method of wtforms
+    return picture_filename
+
+
+@app.route('/account', methods=['GET', 'POST'])
 @login_required  # requires login to access this page, goes to login route
 def account():
-    return render_template('account.html', title='Account')
+    form = UpdateAccountForm()
+    if form.validate_on_submit():
+        if form.picture.data:
+            picture_file = save_picture(form.picture.data)
+            current_user.image_file = picture_file
+
+        current_user.username = form.username.data
+        current_user.email = form.email.data  # these update the db as well, connected to by flask_login
+        db.session.commit()
+        flash('Update successful.', 'success')
+        return redirect(url_for('account'))  # avoid form input reload warning
+    elif request.method == 'GET':
+        form.username.data = current_user.username  # autofill the form when the page is initially loaded
+        form.email.data = current_user.email
+    image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
+    return render_template('account.html', title='Account', image_file=image_file, form=form)
