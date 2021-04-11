@@ -146,10 +146,7 @@ def new_post():
         db.session.add(post)
         db.session.commit()
 
-        print(form.recipients.data)
         for recipient in form.recipients.data:
-            print(post.id)
-            print(recipient.id)
             db.session.add(PostRecipient(post_id=post.id, recipient_id=recipient.id))
         db.session.commit()
 
