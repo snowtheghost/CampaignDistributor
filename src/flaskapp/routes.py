@@ -193,6 +193,17 @@ def user_posts(username):
     return render_template('user_posts.html', posts=posts, user=user)
 
 
+@app.route('/affiliation/<string:id>')
+def affiliation_posts(id):
+    page = request.args.get('page', 1, type=int)
+    affiliation = Affiliation.query.filter_by(id=id).first_or_404()
+    # load all posts from db and pass in to template
+    posts = Post.query.filter_by(affiliation=affiliation)\
+        .order_by(Post.date_posted.desc())\
+        .paginate(page=page, per_page=5)
+    return render_template('affiliation_posts.html', posts=posts, affiliation=affiliation)
+
+
 def send_reset_email(user):
     token = user.get_reset_token()
     msg = Message('Password Reset Request', sender='campaignmanager@gmail.com', recipients=[user.email])
