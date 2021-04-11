@@ -12,25 +12,27 @@
 
     <!-- Title Code -->
     {% if title %}  <!-- if title is specified, set title -->
-        <title>Flask Blog - {{ title }}</title>
+        <title>Campaign Distributor - {{ title }}</title>
     {% else %}
-        <title>Flask Blog</title>
+        <title>Campaign Distributor</title>
     {% endif %}
 </head>
 <body>
     <header class="site-header">
         <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
             <div class="container">
-                <a class="navbar-brand mr-4" href="/">Flask Blog</a>
+                <a class="navbar-brand mr-4" href="/">Campaign Distributor v1.0.0-b</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="collapse navbar-collapse" id="navbarToggle">
                     <!-- Navbar Left Side -->
                     <div class="navbar-nav mr-auto">
-                        <a class="nav-item nav-link" href="{{ url_for('home') }}">Home</a>
+                        {% if current_user.is_authenticated %}
+                            <a class="nav-item nav-link" href="{{ url_for('home') }}">Home</a>
+                            <a class="nav-item nav-link" href="{{ url_for('new_post') }}">Campaign Creator</a>
+                        {% endif %}
                         <a class="nav-item nav-link" href="{{ url_for('about') }}">About</a>
-                        <a class="nav-item nav-link" href="{{ url_for('new_post') }}">New Post</a>
                     </div>
                     <!-- Navbar Right Side -->
                     <div class="navbar-nav">
@@ -63,6 +65,7 @@
                 <!-- content block for child pages to overwrite -->
                 {% block content %}{% endblock %}
             </div>
+            <!--
             <div class="col-md-4">
                 <div class="content-section">
                     <h3>Our Sidebar</h3>
@@ -75,6 +78,7 @@
                     </ul>
                 </div>
             </div>
+            -->
         </div>
     </main>
 

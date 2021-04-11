@@ -14,9 +14,12 @@ app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")  # key for cookies
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
+
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'  # set the redirect to login route for login required routes
-login_manager.login_message_category = 'info'  # auto blue flash notification
+# login_manager.login_message_category = 'info'  # auto blue flash notification
+login_manager.login_message = ""  # Don't show a message
+
 app.config['MAIL_SERVER'] = 'smtp.googlemail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True

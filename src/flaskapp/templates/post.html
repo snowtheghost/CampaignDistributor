@@ -16,6 +16,9 @@
             </div>
             <h2 class="article-title">{{ post.title }}</h2>
             <p class="article-content">{{ post.content }}</p>
+            {% if post.image_file %}
+                <img class="img-fluid", src="{{ url_for('static', filename='campaign_pics/' + post.image_file) }}">
+            {% endif %}
         </div>
     </article>
 

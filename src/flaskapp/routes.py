@@ -12,6 +12,7 @@ from flask_mail import Message
 # Specifies the web directory, in this case, the root/homepage
 @app.route('/')
 @app.route('/home')  # multiple decorators handled by the same function
+@login_required
 def home():
     page = request.args.get('page', 1, type=int)
     # load all posts from db and pass in to template
@@ -109,17 +110,34 @@ def account():
     return render_template('account.html', title='Account', image_file=image_file, form=form)
 
 
+def campaign_picture(form_picture):  # TODO connection
+    random_hex = secrets.token_hex(8)
+    _, f_ext = os.path.splitext(form_picture.filename)
+    picture_filename = random_hex + f_ext
+    picture_path = os.path.join(app.root_path, 'static/campaign_pics', picture_filename)  # joins paths to desired dir
+
+    i = Image.open(form_picture)
+    i.save(picture_path)  # method of wtforms
+    return picture_filename
+
+
 @app.route('/post/new', methods=['GET', 'POST'])
 @login_required
 def new_post():
     form = PostForm()
+
     if form.validate_on_submit():
-        post = Post(title=form.title.data, content=form.content.data, author=current_user)
+        picture_file = None
+        print(form.image.data)
+        if form.image.data:
+            picture_file = campaign_picture(form.image.data)
+
+        post = Post(title=form.title.data, content=form.content.data, image_file=picture_file, author=current_user)
         db.session.add(post)
         db.session.commit()
         flash('Post created.', 'success')
         return redirect(url_for('home'))
-    return render_template('create_post.html', title='New Post', form=form, legend="New Post")
+    return render_template('new_post.html', title='New Post', form=form, legend="Campaign Creator")
 
 
 @app.route('/post/<int:post_id>')  # pass in post_id to the route, and use post_id in url
@@ -144,7 +162,7 @@ def update_post(post_id):
     elif request.method == 'GET':
         form.title.data = post.title
         form.content.data = post.content
-    return render_template('create_post.html', title='Edit Post', form=form, legend="Update Post")
+    return render_template('new_post.html', title='Edit Post', form=form, legend="Update Post")
 
 
 @app.route('/post/<int:post_id>/delete', methods=['POST'])
