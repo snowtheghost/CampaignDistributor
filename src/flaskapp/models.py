@@ -15,7 +15,8 @@ class User(db.Model, UserMixin):  # inherit from SQLite.Model and flask_login.Us
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
     posts = db.relationship('Post', backref='author', lazy=True)
-    affiliation_id = db.Column(db.Integer, db.ForeignKey('affiliation.id'), nullable=False)
+    affiliation_id = db.Column(db.Integer, db.ForeignKey('affiliation.id'), nullable=True)
+    type = db.Column(db.Integer, nullable=False)
 
     def get_reset_token(self, expires_sec=1800):
         s = Serializer(app.config['SECRET_KEY'], expires_sec)
@@ -42,12 +43,13 @@ class Post(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     affiliation_id = db.Column(db.Integer, db.ForeignKey('affiliation.id'), nullable=False)
     image_file = db.Column(db.String(20), nullable=True)
+    recipients = db.relationship('PostRecipient', backref='post', lazy=True)
 
     def __repr__(self):
         return f"Post('{self.title}', '{self.date_posted}', '{self.image_file})"
 
 
-class Affiliation(db.Model):  # inherit from SQLite.Model and flask_login.UserMixin
+class Affiliation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(20), unique=True, nullable=False)
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
@@ -56,3 +58,9 @@ class Affiliation(db.Model):  # inherit from SQLite.Model and flask_login.UserMi
 
     def __repr__(self):
         return f"{self.name}"
+
+
+class PostRecipient(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
+    recipient_id = db.Column(db.Integer, db.ForeignKey('affiliation.id'), nullable=False)

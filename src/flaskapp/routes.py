@@ -4,9 +4,10 @@ from PIL import Image
 from flask import render_template, flash, redirect, url_for, redirect, request, abort
 from flaskapp import app, db, bcrypt, mail
 from flaskapp.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm, RequestResetForm, ResetPasswordForm
-from flaskapp.models import User, Post, Affiliation
+from flaskapp.models import User, Post, Affiliation, PostRecipient
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
+from flask_paginate import Pagination, get_page_args
 
 
 # Specifies the web directory, in this case, the root/homepage
@@ -14,10 +15,10 @@ from flask_mail import Message
 @app.route('/home')  # multiple decorators handled by the same function
 @login_required
 def home():
-    page = request.args.get('page', 1, type=int)
-    # load all posts from db and pass in to template
-    posts = Post.query.order_by(Post.date_posted.desc()).paginate(page=page, per_page=5)
-    return render_template('home.html', posts=posts)
+    if current_user.type == 1:
+        return redirect(url_for("affiliation_posts", id=current_user.affiliation.id))
+    elif current_user.type == 2:
+        return redirect(url_for("unread_posts"))
 
 
 @app.route('/about')
@@ -35,10 +36,15 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         # Add form received data to db model
+        usertype = None
+        if form.type.data == "Provider":
+            usertype = 1
+        if form.type.data == "Distributor":
+            usertype = 2
         hashed_password = \
             bcrypt.generate_password_hash(form.password.data).decode('utf-8') # hash password and decode hash to string
         user = User(username=form.username.data, email=form.email.data,
-                    password=hashed_password, affiliation=form.affiliation.data)
+                    password=hashed_password, affiliation=form.affiliation.data, type=usertype)
 
         # Add created model to db and commit
         db.session.add(user)
@@ -133,13 +139,20 @@ def new_post():
 
     if form.validate_on_submit():
         picture_file = None
-        print(form.image.data)
         if form.image.data:
             picture_file = campaign_picture(form.image.data)
 
         post = Post(title=form.title.data, content=form.content.data, image_file=picture_file, author=current_user, affiliation=current_user.affiliation)
         db.session.add(post)
         db.session.commit()
+
+        print(form.recipients.data)
+        for recipient in form.recipients.data:
+            print(post.id)
+            print(recipient.id)
+            db.session.add(PostRecipient(post_id=post.id, recipient_id=recipient.id))
+        db.session.commit()
+
         flash('Post created.', 'success')
         return redirect(url_for('home'))
     return render_template('new_post.html', title='New Post', form=form, legend="Campaign Creator")
@@ -246,3 +259,15 @@ def reset_token(token):
             flash("Password reset successfully.", 'success')  # success: bootstrap class
             return redirect(url_for('login'))
         return render_template('reset_token.html', title="Reset Password", form=form)
+
+
+@app.route('/unread_posts/')
+def unread_posts():
+    page = request.args.get('page', 1, type=int)
+    posts = Post.query.order_by(Post.date_posted.desc())  # .paginate(page=page, per_page=5)
+    filtered_posts = []
+    for post in posts:
+        for pr in PostRecipient.query.filter_by(post_id=post.id):
+            if pr.recipient_id == current_user.affiliation.id:
+                filtered_posts.append(post)
+    return render_template('unread_posts.html', title="Unread Campaigns", posts=filtered_posts)

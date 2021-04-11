@@ -3,7 +3,7 @@ from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from flask_login import current_user
 from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, SelectField
-from wtforms.ext.sqlalchemy.fields import QuerySelectField
+from wtforms.ext.sqlalchemy.fields import QuerySelectField, QuerySelectMultipleField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 
 from flaskapp.models import User, Affiliation
@@ -27,6 +27,7 @@ class RegistrationForm(FlaskForm):
                            validators=[DataRequired(), Length(min=MIN_USERNAME_LENGTH, max=MAX_USERNAME_LENGTH)])
     email = StringField('Email', validators=[DataRequired(), Email()])
     affiliation = QuerySelectField('Affiliation', query_factory=affiliation_query, validators=[DataRequired()])
+    type = SelectField('Type', choices=["Provider", "Distributor"], validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=MIN_PASSWORD_LENGTH)])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
 
@@ -72,10 +73,15 @@ class UpdateAccountForm(FlaskForm):
                 raise ValidationError('Email already in use.')
 
 
+def recipient_query():
+    return Affiliation.query.all()
+
+
 class PostForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
     content = TextAreaField('Details', validators=[DataRequired()])
     image = FileField('Image Attachment', validators=[FileAllowed(['jpg', 'png'])])
+    recipients = QuerySelectMultipleField('Recipients', query_factory=recipient_query, validators=[DataRequired()] )
     submit = SubmitField('Publish')
 
 

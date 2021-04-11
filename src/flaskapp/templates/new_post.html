@@ -46,6 +46,22 @@
                         {% endfor %}
                     {% endif %}
                 </div>
+
+            <!-- recipient code, with error alerts built in with WTForms -->
+                <div class="form-group">
+                    {{ form.recipients.label(class="form-control-label") }}
+                        {% if form.recipients.errors %}
+                        {{ form.recipients(class="form-control form-control-lg is-invalid") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.recipients.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {{ form.recipients(class="form-control form-control-lg") }}
+                    {% endif %}
+                </div>
+
             </fieldset>
 
             <!-- submit button -->
