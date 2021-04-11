@@ -7,3 +7,4 @@ email_validator
 flask-bcrypt
 flask-login
 pillow
+flask-mail
