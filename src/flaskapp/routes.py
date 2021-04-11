@@ -15,9 +15,9 @@ from flask_paginate import Pagination, get_page_args
 @app.route('/home')  # multiple decorators handled by the same function
 @login_required
 def home():
-    if current_user.type == 1:
+    if current_user.provider:
         return redirect(url_for("affiliation_posts", id=current_user.affiliation.id))
-    elif current_user.type == 2:
+    elif current_user.distributor:
         return redirect(url_for("unread_posts"))
 
 
@@ -36,15 +36,16 @@ def register():
     form = RegistrationForm()
     if form.validate_on_submit():
         # Add form received data to db model
-        usertype = None
         if form.type.data == "Provider":
-            usertype = 1
-        if form.type.data == "Distributor":
-            usertype = 2
+            provider = 1
+            distributor = 0
+        else:  # form.type.data == "Distributor"
+            provider = 0
+            distributor = 1
         hashed_password = \
             bcrypt.generate_password_hash(form.password.data).decode('utf-8') # hash password and decode hash to string
-        user = User(username=form.username.data, email=form.email.data,
-                    password=hashed_password, affiliation=form.affiliation.data, type=usertype)
+        user = User(username=form.username.data, email=form.email.data, password=hashed_password, admin = 0,
+                    affiliation=form.affiliation.data, provider=provider, distributor=distributor)
 
         # Add created model to db and commit
         db.session.add(user)

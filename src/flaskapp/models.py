@@ -16,7 +16,9 @@ class User(db.Model, UserMixin):  # inherit from SQLite.Model and flask_login.Us
     password = db.Column(db.String(60), nullable=False)
     posts = db.relationship('Post', backref='author', lazy=True)
     affiliation_id = db.Column(db.Integer, db.ForeignKey('affiliation.id'), nullable=True)
-    type = db.Column(db.Integer, nullable=False)
+    admin = db.Column(db.Integer, nullable=False)
+    provider = db.Column(db.Integer, nullable=False)
+    distributor = db.Column(db.Integer, nullable=False)
 
     def get_reset_token(self, expires_sec=1800):
         s = Serializer(app.config['SECRET_KEY'], expires_sec)
