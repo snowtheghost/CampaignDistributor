@@ -7,3 +7,4 @@ src/flaskapp/static/profile_pics/59741970eb945ed6.jpg
 backups/
 src/flaskapp/static
 src/.env
+src/db.py

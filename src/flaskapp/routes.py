@@ -4,7 +4,7 @@ from PIL import Image
 from flask import render_template, flash, redirect, url_for, redirect, request, abort
 from flaskapp import app, db, bcrypt, mail
 from flaskapp.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm, RequestResetForm, ResetPasswordForm
-from flaskapp.models import User, Post
+from flaskapp.models import User, Post, Affiliation
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
 
@@ -37,14 +37,15 @@ def register():
         # Add form received data to db model
         hashed_password = \
             bcrypt.generate_password_hash(form.password.data).decode('utf-8') # hash password and decode hash to string
-        user = User(username=form.username.data, email=form.email.data, password=hashed_password)
+        user = User(username=form.username.data, email=form.email.data,
+                    password=hashed_password, affiliation=form.affiliation.data)
 
         # Add created model to db and commit
         db.session.add(user)
         db.session.commit()
 
         flash("Account created successfully.", 'success')  # success: bootstrap class
-        return redirect(url_for('login'))
+        return redirect(url_for('account'))
     return render_template('register.html', title="Registration Form", form=form)
 
 
@@ -75,11 +76,11 @@ def logout():
     return redirect(url_for('home'))
 
 
-def save_picture(form_picture):  # save a picture using randomized token
+def company_picture(form_picture):  # save a picture using randomized token
     random_hex = secrets.token_hex(8)
     _, f_ext = os.path.splitext(form_picture.filename)
     picture_filename = random_hex + f_ext
-    picture_path = os.path.join(app.root_path, 'static/profile_pics', picture_filename)  # joins paths to desired dir
+    picture_path = os.path.join(app.root_path, 'static/company_pics', picture_filename)  # joins paths to desired dir
 
     output_size = (125, 125)
     i = Image.open(form_picture)
@@ -95,18 +96,22 @@ def account():
     form = UpdateAccountForm()
     if form.validate_on_submit():
         if form.picture.data:
-            picture_file = save_picture(form.picture.data)
-            current_user.image_file = picture_file
+            picture_file = company_picture(form.picture.data)
+            current_user.affiliation.image_file = picture_file
 
         current_user.username = form.username.data
         current_user.email = form.email.data  # these update the db as well, connected to by flask_login
+
+        current_user.affiliation = form.affiliation.data
+
         db.session.commit()
         flash('Update successful.', 'success')
         return redirect(url_for('account'))  # avoid form input reload warning
     elif request.method == 'GET':
+        form.affiliation.data = current_user.affiliation
         form.username.data = current_user.username  # autofill the form when the page is initially loaded
         form.email.data = current_user.email
-    image_file = url_for('static', filename='profile_pics/' + current_user.image_file)
+    image_file = url_for('static', filename='company_pics/' + current_user.affiliation.image_file)
     return render_template('account.html', title='Account', image_file=image_file, form=form)
 
 
@@ -132,7 +137,7 @@ def new_post():
         if form.image.data:
             picture_file = campaign_picture(form.image.data)
 
-        post = Post(title=form.title.data, content=form.content.data, image_file=picture_file, author=current_user)
+        post = Post(title=form.title.data, content=form.content.data, image_file=picture_file, author=current_user, affiliation=current_user.affiliation)
         db.session.add(post)
         db.session.commit()
         flash('Post created.', 'success')

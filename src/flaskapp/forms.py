@@ -2,15 +2,22 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from flask_login import current_user
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, SelectField
+from wtforms.ext.sqlalchemy.fields import QuerySelectField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 
-from flaskapp.models import User
+from flaskapp.models import User, Affiliation
 
 MIN_USERNAME_LENGTH = 2
 MAX_USERNAME_LENGTH = 20
 
 MIN_PASSWORD_LENGTH = 8
+
+
+def affiliation_query():
+    affiliations = ["", ""]
+    affiliations += Affiliation.query.all()
+    return Affiliation.query.all()
 
 
 # Class for registration forms inheriting from FlaskForm
@@ -19,6 +26,7 @@ class RegistrationForm(FlaskForm):
     username = StringField('Username',
                            validators=[DataRequired(), Length(min=MIN_USERNAME_LENGTH, max=MAX_USERNAME_LENGTH)])
     email = StringField('Email', validators=[DataRequired(), Email()])
+    affiliation = QuerySelectField('Affiliation', query_factory=affiliation_query, validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=MIN_PASSWORD_LENGTH)])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
 
@@ -44,10 +52,11 @@ class LoginForm(FlaskForm):
 
 
 class UpdateAccountForm(FlaskForm):
+    affiliation = QuerySelectField('Affiliation', query_factory=affiliation_query, validators=[DataRequired()])
     username = StringField('Username',
                            validators=[DataRequired(), Length(min=MIN_USERNAME_LENGTH, max=MAX_USERNAME_LENGTH)])
     email = StringField('Email', validators=[DataRequired(), Email()])
-    picture = FileField('Profile Image', validators=[FileAllowed(['jpg', 'png'])])
+    picture = FileField('Affiliation Logo', validators=[FileAllowed(['jpg', 'png'])])
     submit = SubmitField('Update')
 
     def validate_username(self, username):
