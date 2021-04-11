@@ -115,14 +115,14 @@ def account():
         flash('Update successful.', 'success')
         return redirect(url_for('account'))  # avoid form input reload warning
     elif request.method == 'GET':
-        form.affiliation.data = current_user.affiliation
+        # form.affiliation.data = current_user.affiliation
         form.username.data = current_user.username  # autofill the form when the page is initially loaded
         form.email.data = current_user.email
     image_file = url_for('static', filename='company_pics/' + current_user.affiliation.image_file)
     return render_template('account.html', title='Account', image_file=image_file, form=form)
 
 
-def campaign_picture(form_picture):  # TODO connection
+def campaign_picture(form_picture):
     random_hex = secrets.token_hex(8)
     _, f_ext = os.path.splitext(form_picture.filename)
     picture_filename = random_hex + f_ext
@@ -136,6 +136,9 @@ def campaign_picture(form_picture):  # TODO connection
 @app.route('/post/new', methods=['GET', 'POST'])
 @login_required
 def new_post():
+    if not current_user.provider:
+        abort(403)
+
     form = PostForm()
 
     if form.validate_on_submit():
@@ -162,12 +165,13 @@ def post(post_id):
     return render_template('post.html', title=post.title, post=post)
 
 
-@app.route('/post/<int:post_id>/update', methods=['GET', 'POST'])  # pass in post_id to the route, and use post_id in url
+@app.route('/post/<int:post_id>/update', methods=['GET', 'POST'])  # pass in post_id to the route and use post_id in url
 @login_required
 def update_post(post_id):
     post = Post.query.get_or_404(post_id)
     if post.author != current_user:
         abort(403)  # abort the redirect
+
     form = PostForm()
     if form.validate_on_submit():
         post.title = form.title.data
@@ -187,6 +191,7 @@ def delete_post(post_id):
     post = Post.query.get_or_404(post_id)
     if post.author != current_user:
         abort(403)  # abort the redirect
+
     db.session.delete(post)  # delete post object
     db.session.commit()
     flash('Post deleted', 'success')
@@ -195,6 +200,12 @@ def delete_post(post_id):
 
 @app.route('/user/<string:username>')  # multiple decorators handled by the same function
 def user_posts(username):
+    if User.query.filter_by(username=username).first() is not None \
+            and current_user.affiliation != User.query.filter_by(username=username).first().affiliation:
+        abort(403)
+    if current_user.distributor:
+        abort(403)
+
     page = request.args.get('page', 1, type=int)
     user = User.query.filter_by(username=username).first_or_404()
     # load all posts from db and pass in to template
@@ -206,8 +217,14 @@ def user_posts(username):
 
 @app.route('/affiliation/<string:id>')
 def affiliation_posts(id):
+    if current_user.provider and int(current_user.affiliation.id) != int(id):
+        abort(403)
+    if current_user.distributor:
+        abort(403)
+
     page = request.args.get('page', 1, type=int)
     affiliation = Affiliation.query.filter_by(id=id).first_or_404()
+
     # load all posts from db and pass in to template
     posts = Post.query.filter_by(affiliation=affiliation)\
         .order_by(Post.date_posted.desc())\
@@ -261,7 +278,10 @@ def reset_token(token):
 
 @app.route('/unread_posts/')
 def unread_posts():
-    page = request.args.get('page', 1, type=int)
+    if not current_user.distributor:
+        abort(403)
+
+    # page = request.args.get('page', 1, type=int)
     posts = Post.query.order_by(Post.date_posted.desc())  # .paginate(page=page, per_page=5)
     filtered_posts = []
     for post in posts:

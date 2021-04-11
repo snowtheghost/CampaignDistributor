@@ -1,6 +1,6 @@
 {% extends "layout.html" %}  <!-- inherits from layout.html -->
 {% block content %}  <!-- overrides content in layout.html -->
-    <h1 class="mb-3">Campaigns for {{ affiliation }} ({{ posts.total }})</h1>
+    <h1 class="mb-3">Campaigns: {{ affiliation }} ({{ posts.total }})</h1>
     {% for post in posts.items %}  <!-- code blocked using variable from template render -->
         <article class="media content-section">
             <img class="rounded-circle article-img" src="{{ url_for('static', filename='company_pics/' + post.author.affiliation.image_file) }}">

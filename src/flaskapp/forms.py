@@ -53,7 +53,7 @@ class LoginForm(FlaskForm):
 
 
 class UpdateAccountForm(FlaskForm):
-    affiliation = QuerySelectField('Affiliation', query_factory=affiliation_query, validators=[DataRequired()])
+    # affiliation = QuerySelectField('Affiliation', query_factory=affiliation_query, validators=[DataRequired()])
     username = StringField('Username',
                            validators=[DataRequired(), Length(min=MIN_USERNAME_LENGTH, max=MAX_USERNAME_LENGTH)])
     email = StringField('Email', validators=[DataRequired(), Email()])

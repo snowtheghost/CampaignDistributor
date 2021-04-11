@@ -5,7 +5,11 @@
             <img class="rounded-circle article-img" src="{{ url_for('static', filename='company_pics/' + post.author.affiliation.image_file) }}">
             <div class="media-body">
                 <div class="article-metadata">
-                    <a class="mr-2" href="{{ url_for('affiliation_posts', id=post.affiliation.id) }}">{{ post.author.affiliation }}</a>
+                    {% if current_user.affiliation_id == post.affiliation.id %}
+                        <a class="mr-2" href="{{ url_for('affiliation_posts', id=post.affiliation.id) }}">{{ post.author.affiliation }}</a>
+                    {% else %}
+                        <a class="mr-2">{{ post.author.affiliation }}</a>
+                    {% endif %}
                     <small class="text-muted">{{ post.date_posted.strftime('%Y-%m-%d') }}</small>
                 </div>
                 <!-- anchor links url to the anchor -->
