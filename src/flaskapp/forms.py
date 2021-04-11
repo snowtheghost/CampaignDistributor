@@ -81,7 +81,15 @@ class PostForm(FlaskForm):
     title = StringField('Title', validators=[DataRequired()])
     content = TextAreaField('Details', validators=[DataRequired()])
     image = FileField('Image Attachment', validators=[FileAllowed(['jpg', 'png'])])
-    recipients = QuerySelectMultipleField('Recipients', query_factory=recipient_query, validators=[DataRequired()] )
+    recipients = QuerySelectMultipleField('Recipients', query_factory=recipient_query, validators=[DataRequired()])
+    submit = SubmitField('Publish')
+
+
+class PostUpdateForm(FlaskForm):
+    title = StringField('Title', validators=[DataRequired()])
+    content = TextAreaField('Details', validators=[DataRequired()])
+    image = FileField('Image Attachment', validators=[FileAllowed(['jpg', 'png'])])
+    recipients = QuerySelectMultipleField('Recipients', query_factory=recipient_query, validators=[])
     submit = SubmitField('Publish')
 
 

@@ -3,7 +3,8 @@ import os
 from PIL import Image
 from flask import render_template, flash, redirect, url_for, redirect, request, abort
 from flaskapp import app, db, bcrypt, mail
-from flaskapp.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm, RequestResetForm, ResetPasswordForm
+from flaskapp.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm, RequestResetForm, \
+    ResetPasswordForm, PostUpdateForm
 from flaskapp.models import User, Post, Affiliation, PostRecipient
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
@@ -109,7 +110,7 @@ def account():
         current_user.username = form.username.data
         current_user.email = form.email.data  # these update the db as well, connected to by flask_login
 
-        current_user.affiliation = form.affiliation.data
+        # current_user.affiliation = form.affiliation.data
 
         db.session.commit()
         flash('Update successful.', 'success')
@@ -172,17 +173,34 @@ def update_post(post_id):
     if post.author != current_user:
         abort(403)  # abort the redirect
 
-    form = PostForm()
+    form = PostUpdateForm()
     if form.validate_on_submit():
         post.title = form.title.data
         post.content = form.content.data
+
+        if form.recipients.data:
+            # Remove old pr
+            for pr in PostRecipient.query.filter_by(post_id=post_id).all():
+                PostRecipient.query.filter_by(id=pr.id).delete()
+
+            for recipient in form.recipients.data:
+                db.session.add(PostRecipient(post_id=post.id, recipient_id=recipient.id))
+
         db.session.commit()
         flash('Post updated.', 'success')
         return redirect(url_for('post', post_id=post.id))
     elif request.method == 'GET':
         form.title.data = post.title
         form.content.data = post.content
-    return render_template('new_post.html', title='Edit Post', form=form, legend="Update Post")
+
+        chosen = ""
+        for pr in PostRecipient.query.filter_by(post_id=post.id).all():
+            chosen += str(Affiliation.query.filter_by(id=pr.recipient_id).first().name)
+            chosen += ", "
+        if chosen != "":
+            chosen = chosen[:-2]
+
+    return render_template('new_post.html', title='Edit Post', form=form, legend="Update Post", chosen=chosen)
 
 
 @app.route('/post/<int:post_id>/delete', methods=['POST'])
