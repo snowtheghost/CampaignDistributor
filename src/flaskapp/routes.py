@@ -259,7 +259,7 @@ def affiliation_posts(id):
 
 def send_reset_email(user):
     token = user.get_reset_token()
-    msg = Message('Password Reset Request', sender='campaignmanager@gmail.com', recipients=[user.email])
+    msg = Message('Password Reset Request', sender=os.environ.get('EMAIL_USER'), recipients=[user.email])
     msg.body = f"""TO reset your password, click on the following link: 
 {url_for('reset_token', token=token, _external=True)}
 
@@ -370,3 +370,23 @@ def add_employees():
             return redirect(url_for('add_employees'))
 
     return render_template('add_employees.html', tile='Add Employees', form=form)
+
+
+@app.route('/post/<int:post_id>/distribute', methods=['GET', 'POST'])
+@login_required
+def distribute(post_id):
+    post = Post.query.get_or_404(post_id)
+    print(post.id)
+    if not current_user.distributor \
+            or current_user.affiliation.id != PostRecipient.query.filter_by(post_id=post.id).first().recipient_id:
+        abort(403)  # abort the redirect
+
+    employees = Employee.query.filter_by(affiliation_id=current_user.affiliation.id)
+    for employee in employees:
+        msg = Message(post.title, sender=os.environ.get('EMAIL_USER'), recipients=[employee.email])
+        msg.body = post.content
+        mail.send(msg)
+
+    db.session.commit()
+    flash('Post distributed', 'success')
+    return redirect(url_for('home'))
