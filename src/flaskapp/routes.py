@@ -12,6 +12,9 @@ from flask_paginate import Pagination, get_page_args
 
 
 # Specifies the web directory, in this case, the root/homepage
+from src.flaskapp.forms import ModifyAffiliationForm, NewAffiliationForm
+
+
 @app.route('/')
 @app.route('/home')  # multiple decorators handled by the same function
 @login_required
@@ -20,6 +23,8 @@ def home():
         return redirect(url_for("affiliation_posts", id=current_user.affiliation.id))
     elif current_user.distributor:
         return redirect(url_for("unread_posts"))
+    elif current_user.admin:
+        return redirect(url_for("account"))
 
 
 @app.route('/about')
@@ -119,8 +124,12 @@ def account():
         # form.affiliation.data = current_user.affiliation
         form.username.data = current_user.username  # autofill the form when the page is initially loaded
         form.email.data = current_user.email
-    image_file = url_for('static', filename='company_pics/' + current_user.affiliation.image_file)
-    return render_template('account.html', title='Account', image_file=image_file, form=form)
+
+    if not current_user.admin:
+        image_file = url_for('static', filename='company_pics/' + current_user.affiliation.image_file)
+        return render_template('account.html', title='Account', image_file=image_file, form=form)
+    else:
+        return render_template('account.html', title='Account', form=form)
 
 
 def campaign_picture(form_picture):
@@ -296,7 +305,7 @@ def reset_token(token):
 
 @app.route('/unread_posts/')
 def unread_posts():
-    if not current_user.distributor:
+    if not current_user.is_authenticated or not current_user.distributor:
         abort(403)
 
     # page = request.args.get('page', 1, type=int)
@@ -307,3 +316,34 @@ def unread_posts():
             if pr.recipient_id == current_user.affiliation.id:
                 filtered_posts.append(post)
     return render_template('unread_posts.html', title="Unread Campaigns", posts=filtered_posts)
+
+
+@app.route('/new_affiliation/', methods=['GET', 'POST'])
+def new_affiliation():
+    if not current_user.is_authenticated or not current_user.admin:
+        abort(403)
+
+    form = NewAffiliationForm()
+    if form.validate_on_submit():
+        db.session.add(Affiliation(name=form.name.data))
+        db.session.commit()
+
+    return render_template('new_affiliation.html', tile='Create Affiliation', form=form)
+
+
+@app.route('/modify_affiliation/', methods=['GET', 'POST'])
+def modify_affiliation():
+    if not current_user.is_authenticated or not current_user.admin:
+        abort(403)
+
+    form = ModifyAffiliationForm()
+    if form.validate_on_submit():
+        form.affiliation.data.name = form.name.data
+
+        if form.picture.data:
+            picture_file = company_picture(form.picture.data)
+            form.affiliation.data.image_file = picture_file
+
+        db.session.commit()
+
+    return render_template('modify_affiliation.html', tile='Modify Affiliation', form=form)

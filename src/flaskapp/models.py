@@ -57,6 +57,7 @@ class Affiliation(db.Model):
     image_file = db.Column(db.String(20), nullable=False, default='default.jpg')
     posts = db.relationship('Post', backref='affiliation', lazy=True)
     users = db.relationship('User', backref='affiliation', lazy=True)
+    employees = db.relationship('Employee', backref='affiliation', lazy=True)
 
     def __repr__(self):
         return f"{self.name}"
@@ -66,3 +67,9 @@ class PostRecipient(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
     recipient_id = db.Column(db.Integer, db.ForeignKey('affiliation.id'), nullable=False)
+
+
+class Employee(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    affiliation_id = db.Column(db.Integer, db.ForeignKey('affiliation.id'), nullable=True)

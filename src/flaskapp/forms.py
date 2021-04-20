@@ -107,3 +107,17 @@ class ResetPasswordForm(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired(), Length(min=MIN_PASSWORD_LENGTH)])
     confirm_password = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Reset Password')
+
+
+class NewAffiliationForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired(),
+                            Length(min=MIN_USERNAME_LENGTH, max=MAX_USERNAME_LENGTH)])
+    submit = SubmitField('Create')
+
+
+class ModifyAffiliationForm(FlaskForm):
+    affiliation = QuerySelectField('Affiliation', query_factory=affiliation_query, validators=[DataRequired()])
+    name = StringField('Name', validators=[DataRequired(),
+                                           Length(min=MIN_USERNAME_LENGTH, max=MAX_USERNAME_LENGTH)])
+    picture = FileField('Affiliation Logo (Global)', validators=[FileAllowed(['jpg', 'png'])])
+    submit = SubmitField('Update')
