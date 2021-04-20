@@ -117,7 +117,7 @@ class NewAffiliationForm(FlaskForm):
 
 class ModifyAffiliationForm(FlaskForm):
     affiliation = QuerySelectField('Affiliation', query_factory=affiliation_query, validators=[DataRequired()])
-    name = StringField('Name', validators=[DataRequired(),
+    name = StringField('Update Name', validators=[DataRequired(),
                                            Length(min=MIN_USERNAME_LENGTH, max=MAX_USERNAME_LENGTH)])
-    picture = FileField('Affiliation Logo (Global)', validators=[FileAllowed(['jpg', 'png'])])
+    picture = FileField('Update Affiliation Logo (Global)', validators=[FileAllowed(['jpg', 'png'])])
     submit = SubmitField('Update')

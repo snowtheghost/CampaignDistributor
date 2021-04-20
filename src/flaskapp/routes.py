@@ -325,8 +325,13 @@ def new_affiliation():
 
     form = NewAffiliationForm()
     if form.validate_on_submit():
-        db.session.add(Affiliation(name=form.name.data))
-        db.session.commit()
+        try:
+            db.session.add(Affiliation(name=form.name.data))
+            db.session.commit()
+        except:
+            flash('This affiliation already exists', 'danger')
+            return redirect(url_for('new_affiliation'))
+        return redirect(url_for('modify_affiliation'))
 
     return render_template('new_affiliation.html', tile='Create Affiliation', form=form)
 
@@ -345,5 +350,6 @@ def modify_affiliation():
             form.affiliation.data.image_file = picture_file
 
         db.session.commit()
-
+        flash("Edit successful.", 'success')  # success: bootstrap class
+        return redirect(url_for('modify_affiliation'))
     return render_template('modify_affiliation.html', tile='Modify Affiliation', form=form)
