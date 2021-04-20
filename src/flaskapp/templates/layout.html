@@ -21,7 +21,7 @@
     <header class="site-header">
         <nav class="navbar navbar-expand-md navbar-dark bg-steel fixed-top">
             <div class="container">
-                <a class="navbar-brand mr-4" href="/">Campaign Distributor v1.3.2-b</a>
+                <a class="navbar-brand mr-4" href="/">Campaign Distributor v1.3.3-b</a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarToggle" aria-controls="navbarToggle" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -34,6 +34,7 @@
                                 <a class="nav-item nav-link" href="{{ url_for('new_post') }}">Campaign Creator</a>
                             {% elif current_user.distributor %}
                                 <a class="nav-item nav-link" href="{{ url_for('unread_posts') }}">Pending Campaigns</a>
+                                <a class="nav-item nav-link" href="{{ url_for('add_employees') }}">Add Employees</a>
                             {% elif current_user.admin %}
                                 <a class="nav-item nav-link" href="{{ url_for('new_affiliation') }}">Create Affiliation</a>
                                 <a class="nav-item nav-link" href="{{ url_for('modify_affiliation') }}">Edit Affiliations</a>

@@ -4,17 +4,15 @@ from PIL import Image
 from flask import render_template, flash, redirect, url_for, redirect, request, abort
 from flaskapp import app, db, bcrypt, mail
 from flaskapp.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm, RequestResetForm, \
-    ResetPasswordForm, PostUpdateForm
-from flaskapp.models import User, Post, Affiliation, PostRecipient
+    ResetPasswordForm, PostUpdateForm, AddEmployeesForm, ModifyAffiliationForm, \
+    NewAffiliationForm
+from flaskapp.models import User, Post, Affiliation, PostRecipient, Employee
 from flask_login import login_user, current_user, logout_user, login_required
 from flask_mail import Message
 from flask_paginate import Pagination, get_page_args
 
 
 # Specifies the web directory, in this case, the root/homepage
-from src.flaskapp.forms import ModifyAffiliationForm, NewAffiliationForm
-
-
 @app.route('/')
 @app.route('/home')  # multiple decorators handled by the same function
 @login_required
@@ -353,3 +351,22 @@ def modify_affiliation():
         flash("Edit successful.", 'success')  # success: bootstrap class
         return redirect(url_for('modify_affiliation'))
     return render_template('modify_affiliation.html', tile='Modify Affiliation', form=form)
+
+
+@app.route('/add_employees/', methods=['GET', 'POST'])
+def add_employees():
+    if not current_user.is_authenticated or not current_user.distributor:
+        abort(403)
+
+    form = AddEmployeesForm()
+    if form.validate_on_submit():
+        try:
+            db.session.add(Employee(name=form.name.data, email=form.email.data,
+                           affiliation=current_user.affiliation))
+            db.session.commit()
+            flash('Employee added successfully', 'success')
+        except:
+            flash('Email already exists', 'danger')
+            return redirect(url_for('add_employees'))
+
+    return render_template('add_employees.html', tile='Add Employees', form=form)

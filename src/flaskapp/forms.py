@@ -121,3 +121,10 @@ class ModifyAffiliationForm(FlaskForm):
                                            Length(min=MIN_USERNAME_LENGTH, max=MAX_USERNAME_LENGTH)])
     picture = FileField('Update Affiliation Logo (Global)', validators=[FileAllowed(['jpg', 'png'])])
     submit = SubmitField('Update')
+
+
+class AddEmployeesForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired(),
+                                                  Length(max=120)])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    submit = SubmitField('Add')
