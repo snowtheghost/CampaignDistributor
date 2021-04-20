@@ -385,6 +385,13 @@ def distribute(post_id):
     for employee in employees:
         msg = Message(post.title, sender=os.environ.get('EMAIL_USER'), recipients=[employee.email])
         msg.body = post.content
+
+        if post.image_file:
+            with app.open_resource(f"static/campaign_pics/{post.image_file}") as fp:
+                if ".png" in post.image_file:
+                    msg.attach ("test.png", "image/png", fp.read ())
+                elif ".jpg" in post.image_file:
+                    msg.attach ("test.png", "image/jpg", fp.read ())
         mail.send(msg)
 
     db.session.commit()
