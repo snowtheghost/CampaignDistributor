@@ -1,5 +1,12 @@
+import os
+
 from flaskapp import bcrypt, db
 from flaskapp.models import User
+
+try:
+    os.remove('flaskapp/site.db')
+except:
+    pass
 
 db.create_all()
 db.session.commit()

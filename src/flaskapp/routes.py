@@ -311,9 +311,24 @@ def unread_posts():
     filtered_posts = []
     for post in posts:
         for pr in PostRecipient.query.filter_by(post_id=post.id):
-            if pr.recipient_id == current_user.affiliation.id:
+            if pr.recipient_id == current_user.affiliation.id and not post.distributed:
                 filtered_posts.append(post)
-    return render_template('unread_posts.html', title="Unread Campaigns", posts=filtered_posts)
+    return render_template('posts.html', title="Unread Campaigns", posts=filtered_posts)
+
+
+@app.route('/read_posts/')
+def read_posts():
+    if not current_user.is_authenticated or not current_user.distributor:
+        abort(403)
+
+    # page = request.args.get('page', 1, type=int)
+    posts = Post.query.order_by(Post.date_posted.desc())  # .paginate(page=page, per_page=5)
+    filtered_posts = []
+    for post in posts:
+        for pr in PostRecipient.query.filter_by(post_id=post.id):
+            if pr.recipient_id == current_user.affiliation.id and post.distributed:
+                filtered_posts.append(post)
+    return render_template('posts.html', title="Distributed Campaigns", posts=filtered_posts)
 
 
 @app.route('/new_affiliation/', methods=['GET', 'POST'])
@@ -376,7 +391,6 @@ def add_employees():
 @login_required
 def distribute(post_id):
     post = Post.query.get_or_404(post_id)
-    print(post.id)
     if not current_user.distributor \
             or current_user.affiliation.id != PostRecipient.query.filter_by(post_id=post.id).first().recipient_id:
         abort(403)  # abort the redirect
@@ -393,7 +407,7 @@ def distribute(post_id):
                 elif ".jpg" in post.image_file:
                     msg.attach ("test.png", "image/jpg", fp.read ())
         mail.send(msg)
-
+    post.distributed = 1
     db.session.commit()
     flash('Post distributed', 'success')
     return redirect(url_for('home'))

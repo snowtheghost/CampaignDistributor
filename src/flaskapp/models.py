@@ -46,6 +46,7 @@ class Post(db.Model):
     affiliation_id = db.Column(db.Integer, db.ForeignKey('affiliation.id'), nullable=False)
     image_file = db.Column(db.String(20), nullable=True)
     recipients = db.relationship('PostRecipient', backref='post', lazy=True)
+    distributed = db.Column(db.Integer, nullable=False, default=0)
 
     def __repr__(self):
         return f"Post('{self.title}', '{self.date_posted}', '{self.image_file})"

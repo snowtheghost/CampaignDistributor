@@ -13,9 +13,13 @@
                         <button type="button" class="btn btn-danger btn-sm m-1" data-toggle="modal" data-target="#deleteModal">Delete</button>  <!-- m-1: margin -->
                     </div>
                 {% endif %}
-                {%  if current_user.distributor %}
-                    <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{{ url_for('distribute', post_id = post.id) }}">Distribute Campaign</a>
-                {%  endif %}
+                {% if current_user.distributor %}
+                    {% if not post.distributed %}
+                        <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{{ url_for('distribute', post_id = post.id) }}">Distribute Campaign</a>
+                    {% else %}
+                        <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{{ url_for('distribute', post_id = post.id) }}">Re-distribute Campaign</a>
+                    {% endif %}
+                {% endif %}
             </div>
             <h2 class="article-title">{{ post.title }}</h2>
             <p class="article-content">{{ post.content }}</p>
