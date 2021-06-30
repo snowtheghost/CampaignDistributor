@@ -214,10 +214,12 @@ def update_post(post_id):
 @login_required
 def delete_post(post_id):
     post = Post.query.get_or_404(post_id)
+    post_recipient = PostRecipient.query.filter_by(post_id=post_id).first()
     if post.author != current_user:
         abort(403)  # abort the redirect
 
     db.session.delete(post)  # delete post object
+    db.session.delete(post_recipient)
     db.session.commit()
     flash('Post deleted', 'success')
     return redirect(url_for('home'))
