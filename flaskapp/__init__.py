@@ -12,7 +12,10 @@ load_dotenv()  # env for secret key used in cookies
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv("SECRET_KEY")  # key for cookies
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL")
+uri = os.getenv("DATABASE_URL")  # postgres -> postgresql workaround for Heroku
+if uri.startswith("postgres://"):
+    uri = uri.replace("postgres://", "postgresql://", 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = uri
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 
