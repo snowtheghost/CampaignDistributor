@@ -1,8 +1,8 @@
 .idea
 __pycache__
 /resources
-src/flaskapp/.env
-src/flaskapp/site.db
+flaskapp/.env
+flaskapp/site.db
 backups/
-src/.env
-src/db.py
+.env
+db.py
