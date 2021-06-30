@@ -8,7 +8,4 @@ if __name__ == '__main__':
     # load_dotenv()
     # app.run(host=os.getenv("HOST"), port=os.getenv("PORT"))
 
-    # Heroku Deployment
-    if not os.path.exists('flaskapp/site.db'):
-        exec(open("setup.py").read())
     app.run()
